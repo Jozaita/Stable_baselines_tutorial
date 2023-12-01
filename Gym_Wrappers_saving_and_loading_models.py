@@ -182,3 +182,33 @@ for _ in range(10):
 #With a RL algorithm 
 
 from stable_baselines3.common.monitor import Monitor
+from stable_baselines3.common.vec_env import DummyVecEnv
+
+env = Monitor(gym.make("Pendulum-v1"))
+env = DummyVecEnv([lambda: env])
+
+#Se crea un entorno pendulum v1, se monitoriza, y se wrappea en un dummyvecEnv
+model = A2C("MlpPolicy",env,verbose=1).learn(int(1000))
+#With a particular action wrapper
+normalized_env = Monitor(gym.make("Pendulum-v1"))
+normalized_env = NormalizeActionWrapper(normalized_env)
+normalized_env = DummyVecEnv([lambda: normalized_env])
+
+model_2 = A2C("MlpPpolicy",normalized_env,verbose=1).learn(int(1000))
+
+#Wrappers provide external functionality: Some wrappers are
+#   VecNormalize; computes a running mean and std to normalize observarions
+#   VecFrameStack; stacks several observartions
+
+from stable_baselines3.common.vec_env import VecNormalize,VecFrameStack
+
+env = DummyVecEnv([lambda: gym.make("Pendulum-v1")])
+normalized_vec_env = VecNormalize(env)
+
+obs = normalized_vec_env.reset()
+for _ in range(10):
+    action = [normalized_vec_env.action_space.sample()]
+    obs,reward,_,_ = normalized_vec_env.step(action)
+    print(obs,reward)
+
+
